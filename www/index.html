@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>TAR01 — Izjemni predmeti</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital@0;1&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ───────────── BRAND TOKENS (inline = zero external deps, hardware-safe) ───────────── */
+:root{
+  --ochre:#C8961E; --ochre-deep:#A87A12;
+  --navy:#1B2A4A;  --navy-deep:#141F38;
+  --wine:#8B1A2B;  --royal:#2B5DAA;
+  --cream:#F5EDDE; --cream-warm:#EFE4CE;
+  --font-display:"Libre Caslon Text",Georgia,serif;
+  --font-body:"DM Sans",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.4,.64,1);
+  --radius:12px;
+  --shadow:0 4px 20px rgba(27,42,74,.10);
+  --shadow-hi:0 14px 40px rgba(27,42,74,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--navy-deep);
+  font-family:var(--font-body);color:var(--cream);
+  user-select:none;-webkit-user-select:none;touch-action:none}
+
+/* PORTRAIT STAGE — 1200×1920, skalira na poljuben tablet */
+#stage{position:fixed;inset:0;display:flex;flex-direction:column;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #21345A 0%, var(--navy) 45%, var(--navy-deep) 100%);
+  overflow:hidden}
+
+/* botanični ambient (subtilno) */
+#stage::before{content:"";position:absolute;inset:0;opacity:.06;pointer-events:none;
+  background-image:radial-gradient(circle at 20% 15%, var(--ochre) 0 1px, transparent 2px),
+                   radial-gradient(circle at 80% 60%, var(--cream) 0 1px, transparent 2px);
+  background-size:140px 140px,180px 180px}
+
+/* ───────────── HEADER ───────────── */
+header{padding:clamp(28px,4vw,64px) clamp(28px,5vw,72px) clamp(12px,1.5vw,24px);
+  text-align:center;z-index:3}
+.kicker{font-family:var(--font-mono);font-size:clamp(13px,1.4vw,20px);
+  letter-spacing:.32em;text-transform:uppercase;color:var(--ochre);
+  margin-bottom:clamp(10px,1.2vw,18px)}
+h1{font-family:var(--font-display);font-style:italic;font-weight:400;
+  font-size:clamp(34px,5.2vw,76px);line-height:1.04;color:var(--cream)}
+.sub{font-size:clamp(15px,1.7vw,26px);color:var(--cream-warm);opacity:.72;
+  margin-top:clamp(8px,1vw,16px);font-weight:400}
+
+/* ───────────── CAROUSEL VIEWPORT ───────────── */
+#viewport{flex:1;position:relative;overflow:hidden;z-index:2}
+#track{display:flex;height:100%;will-change:transform;
+  transition:transform .55s var(--ease)}
+#track.dragging{transition:none}
+
+.slide{flex:0 0 100%;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  padding:clamp(16px,2.5vw,40px) clamp(28px,5vw,72px) 0}
+
+/* VIDEO FRAME — ležeč 16:9 video v pokončni postaji */
+.media{width:100%;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;
+  background:var(--cream-warm);box-shadow:var(--shadow-hi);position:relative;
+  border:1px solid rgba(245,237,222,.10)}
+.media video{width:100%;height:100%;object-fit:cover;display:block;background:var(--cream-warm)}
+.media .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;color:var(--navy);font-family:var(--font-mono);
+  font-size:clamp(12px,1.3vw,18px);letter-spacing:.1em}
+.media .ph svg{width:clamp(40px,5vw,72px);height:auto;opacity:.45}
+
+/* TEXT BLOCK */
+.info{width:100%;text-align:center;padding:clamp(22px,3vw,48px) 0 0;
+  display:flex;flex-direction:column;gap:clamp(10px,1.2vw,18px)}
+.group{font-family:var(--font-mono);font-size:clamp(12px,1.3vw,18px);
+  letter-spacing:.22em;text-transform:uppercase;color:var(--ochre)}
+.title{font-family:var(--font-display);font-style:italic;font-weight:400;
+  font-size:clamp(30px,4.4vw,62px);line-height:1.08;color:var(--cream)}
+.year{font-family:var(--font-mono);font-size:clamp(14px,1.5vw,22px);color:var(--cream-warm);opacity:.6}
+.desc{font-size:clamp(16px,1.9vw,28px);line-height:1.5;color:var(--cream-warm);
+  opacity:.85;max-width:90%;margin:0 auto;font-weight:400}
+
+/* ───────────── KONTROLE ───────────── */
+#controls{z-index:4;padding:clamp(18px,2.4vw,40px) clamp(28px,5vw,72px)
+  clamp(28px,4vw,60px);display:flex;flex-direction:column;
+  align-items:center;gap:clamp(14px,1.8vw,28px)}
+
+.arrows{display:flex;justify-content:space-between;width:100%;align-items:center}
+.arrow{width:clamp(64px,8vw,108px);height:clamp(64px,8vw,108px);border-radius:50%;
+  background:rgba(245,237,222,.07);border:1.5px solid rgba(245,237,222,.18);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:transform .3s var(--ease-spring),background .3s var(--ease),border-color .3s var(--ease)}
+.arrow:active{transform:scale(.92);background:rgba(200,150,30,.18);border-color:var(--ochre)}
+.arrow svg{width:46%;height:46%;stroke:var(--cream);stroke-width:2.4;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+
+.counter{font-family:var(--font-mono);font-size:clamp(15px,1.7vw,26px);
+  letter-spacing:.12em;color:var(--cream-warm);min-width:6ch;text-align:center}
+.counter b{color:var(--ochre);font-weight:500}
+
+/* DOTS */
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,.9vw,14px);
+  max-width:100%}
+.dot{width:clamp(8px,.85vw,13px);height:clamp(8px,.85vw,13px);border-radius:50%;
+  background:rgba(245,237,222,.22);cursor:pointer;transition:all .35s var(--ease)}
+.dot.active{background:var(--ochre);transform:scale(1.5)}
+
+/* PROGRESS HAIRLINE */
+#progress{position:absolute;left:0;bottom:0;height:3px;background:var(--ochre);
+  width:0;transition:width .55s var(--ease);z-index:5;box-shadow:0 0 12px rgba(200,150,30,.5)}
+
+/* IDLE HINT */
+#hint{position:absolute;left:50%;bottom:clamp(110px,14vw,200px);transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:clamp(13px,1.4vw,20px);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--cream-warm);opacity:0;pointer-events:none;
+  transition:opacity .6s var(--ease);z-index:6;white-space:nowrap}
+#hint.show{opacity:.55;animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.65}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <header>
+    <div class="kicker" id="kicker">TAR01 · Izjemni predmeti</div>
+    <h1 id="heading">Izjemni predmeti</h1>
+    <div class="sub" id="subheading"></div>
+  </header>
+
+  <div id="viewport">
+    <div id="track"></div>
+    <div id="hint">← poteg za naslednji predmet →</div>
+  </div>
+
+  <div id="controls">
+    <div class="arrows">
+      <div class="arrow" id="prev" aria-label="Prejšnji">
+        <svg viewBox="0 0 24 24"><polyline points="15 5 8 12 15 19"/></svg>
+      </div>
+      <div class="counter"><b id="cur">1</b> / <span id="total">1</span></div>
+      <div class="arrow" id="next" aria-label="Naslednji">
+        <svg viewBox="0 0 24 24"><polyline points="9 5 16 12 9 19"/></svg>
+      </div>
+    </div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div id="progress"></div>
+</div>
+
+<script src="content.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "lavicka-tar01",
+  "version": "1.0.0",
+  "description": "TAR01 — Izjemni predmeti (Lavičkova zbirka, muzejski kiosk)",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/core": "^8.3.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.3.4"
+  }
+}

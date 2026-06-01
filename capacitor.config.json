@@ -1,0 +1,12 @@
+{
+  "appId": "si.lavicka.tar01",
+  "appName": "Izjemni predmeti",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
