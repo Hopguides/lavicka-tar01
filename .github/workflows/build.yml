@@ -1,6 +1,5 @@
 name: Build TAR01 APK
 
-# Sproži se ob vsakem push na main, ALI ročno (Actions → Run workflow)
 on:
   push:
     branches: [ main ]
@@ -16,9 +15,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Setup Java (za Android build)
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -27,13 +26,18 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install SDK 36 + build-tools (Capacitor 8 zahteva)
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
       - name: Install dependencies
         run: npm install
 
       - name: Add Android platform
-        run: |
-          npx cap add android || echo "android že obstaja"
-          npx cap sync android
+        run: npx cap add android
+
+      - name: Sync web assets
+        run: npx cap sync android
 
       - name: Apply kiosk settings
         run: bash kiosk-patch.sh
@@ -42,11 +46,13 @@ jobs:
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: TAR01-Izjemni-predmeti-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
+          if-no-files-found: warn
